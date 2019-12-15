@@ -44,7 +44,10 @@ export class Leads extends Component {
           </thead>
           <tbody>
             {this.props.leads.map((lead) => (
-              <tr key={lead.id} onClick={this.currentLead.bind(this, lead.id)}>
+              <tr
+                key={lead.id}
+                onDoubleClick={this.currentLead.bind(this, lead.id)}
+              >
                 <td>{lead.id}</td>
                 <td>{lead.name}</td>
                 <td>{lead.email}</td>
