@@ -7,7 +7,7 @@ import {
   GET_ERRORS,
   CURRENT_LEAD
 } from "./types";
-import { createMessage } from "./messages";
+import { createMessage, returnErrors } from "./messages";
 
 // get leads
 export const getLeads = () => (dispatch) => {
@@ -37,37 +37,34 @@ export const delLead = (id) => (dispatch) => {
       dispatch({ type: DEL_LEAD, payload: id });
     })
     .catch((err) => {
-      const error = {
-        msg: err.response.data,
-        status: err.response.status
-      };
-      dispatch({
-        type: GET_ERRORS,
-        payload: error
-      });
+      dispatch(returnErrors(err.response.data, err.response.status));
     });
 };
 
 // add leads
 export const addLead = (data) => (dispatch) => {
-  const clearLead = { id: "", name: "", email: "", message: "", create_at: "" };
+  const clearLead = { id: "", name: "", email: "", message: "" };
   if (data.id) {
     axios
-      .put(`/api/leads/${data.id}/`, data)
+      .get(`/api/leads/${data.id}/`)
       .then((res) => {
-        dispatch(createMessage({ updateLead: "Lead Updated" }));
-        dispatch({ type: UPDATE_LEAD, payload: res.data });
-        dispatch({ type: CURRENT_LEAD, payload: clearLead });
+        const newLead = res.data;
+        newLead.name = data.name;
+        newLead.email = data.email;
+        newLead.message = data.message;
+        axios
+          .put(`/api/leads/${data.id}/`, newLead)
+          .then((res) => {
+            dispatch(createMessage({ updateLead: "Lead Updated" }));
+            dispatch({ type: UPDATE_LEAD, payload: res.data });
+            dispatch({ type: CURRENT_LEAD, payload: clearLead });
+          })
+          .catch((err) => {
+            dispatch(returnErrors(err.response.data, err.response.status));
+          });
       })
       .catch((err) => {
-        const error = {
-          msg: err.response.data,
-          status: err.response.status
-        };
-        dispatch({
-          type: GET_ERRORS,
-          payload: error
-        });
+        dispatch(returnErrors(err.response.data, err.response.status));
       });
   } else {
     axios
@@ -78,14 +75,7 @@ export const addLead = (data) => (dispatch) => {
         dispatch({ type: CURRENT_LEAD, payload: clearLead });
       })
       .catch((err) => {
-        const error = {
-          msg: err.response.data,
-          status: err.response.status
-        };
-        dispatch({
-          type: GET_ERRORS,
-          payload: error
-        });
+        dispatch(returnErrors(err.response.data, err.response.status));
       });
   }
 };
