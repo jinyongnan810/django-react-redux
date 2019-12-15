@@ -9,21 +9,37 @@ export class Form extends Component {
     addLead: PropTypes.func.isRequired,
     currentLead: PropTypes.object.isRequired
   };
-  //   state = {
-  //     name: "",
-  //     email: "",
-  //     message: ""
-  //   };
+  state = {
+    name: "",
+    email: "",
+    message: ""
+  };
+  componentDidUpdate(preProps) {
+    if (preProps.currentLead !== this.props.currentLead) {
+      const newLead = this.props.currentLead;
+      this.setState({ name: newLead.name });
+      this.setState({ email: newLead.email });
+      this.setState({ message: newLead.message });
+    }
+  }
   onChange = (e) => {
-    const lead = this.props.currentLead;
-    store.dispatch({
-      type: CURRENT_LEAD,
-      payload: { ...lead, [e.target.name]: e.target.value }
-    });
+    // const lead = this.props.currentLead;
+    // store.dispatch({
+    //   type: CURRENT_LEAD,
+    //   payload: { ...lead, [e.target.name]: e.target.value }
+    // });
+    this.setState({ [e.target.name]: e.target.value });
   };
   onSubmit = (e) => {
     e.preventDefault();
     const lead = this.props.currentLead;
+    lead.name = this.state.name;
+    lead.email = this.state.email;
+    lead.message = this.state.message;
+    store.dispatch({
+      type: CURRENT_LEAD,
+      payload: lead
+    });
     this.props.addLead(lead);
   };
   render() {
@@ -38,7 +54,7 @@ export class Form extends Component {
               type="text"
               name="name"
               onChange={this.onChange}
-              value={this.props.currentLead.name}
+              value={this.state.name}
             />
           </div>
           <div className="form-group">
@@ -48,7 +64,7 @@ export class Form extends Component {
               type="email"
               name="email"
               onChange={this.onChange}
-              value={this.props.currentLead.email}
+              value={this.state.email}
             />
           </div>
           <div className="form-group">
@@ -58,7 +74,7 @@ export class Form extends Component {
               type="text"
               name="message"
               onChange={this.onChange}
-              value={this.props.currentLead.message}
+              value={this.state.message}
             />
           </div>
           <div className="form-group">
