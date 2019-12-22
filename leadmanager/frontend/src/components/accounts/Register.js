@@ -1,6 +1,11 @@
 import React, { Component } from "react";
-import { Link } from "react-router-dom";
-
+import { Link, Redirect } from "react-router-dom";
+import PropTypes from "prop-types";
+import { connect } from "react-redux";
+import { register_user } from "../../actions/auth";
+import store from "../../store";
+import { returnErrors } from "../../actions/messages";
+import { REGISTER_FAIL } from "../../actions/types";
 export class Register extends Component {
   state = {
     username: "",
@@ -8,13 +13,29 @@ export class Register extends Component {
     password: "",
     password2: ""
   };
+  static propTypes = {
+    register_user: PropTypes.func.isRequired,
+    isAuthenticated: PropTypes.bool
+  };
   onChange = (e) => {
     this.setState({ [e.target.name]: e.target.value });
   };
   onSubmit = (e) => {
     e.preventDefault();
+    const { username, email, password, password2 } = this.state;
+    if (password2 !== password) {
+      store.dispatch(
+        returnErrors({ custom: "confirm password did not match" }, "400")
+      );
+      store.dispatch({ type: REGISTER_FAIL });
+    } else {
+      this.props.register_user({ username, email, password });
+    }
   };
   render() {
+    if (this.props.isAuthenticated) {
+      return <Redirect to="/" />;
+    }
     const { username, email, password, password2 } = this.state;
     return (
       <div className="col-md-6 m-auto">
@@ -76,4 +97,7 @@ export class Register extends Component {
   }
 }
 
-export default Register;
+const mapStateToProps = (state) => ({
+  isAuthenticated: state.auth.isAuthenticated
+});
+export default connect(mapStateToProps, { register_user })(Register);

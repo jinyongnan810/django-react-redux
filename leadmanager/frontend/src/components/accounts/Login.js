@@ -1,18 +1,29 @@
 import React, { Component } from "react";
-import { Link } from "react-router-dom";
+import { Link, Redirect } from "react-router-dom";
+import PropTypes from "prop-types";
+import { connect } from "react-redux";
+import { login_user } from "../../actions/auth";
 
 export class Login extends Component {
   state = {
     username: "",
     password: ""
   };
+  static propTypes = {
+    login_user: PropTypes.func.isRequired,
+    isAuthenticated: PropTypes.bool
+  };
   onChange = (e) => {
     this.setState({ [e.target.name]: e.target.value });
   };
   onSubmit = (e) => {
     e.preventDefault();
+    this.props.login_user(this.state.username, this.state.password);
   };
   render() {
+    if (this.props.isAuthenticated) {
+      return <Redirect to="/" />;
+    }
     const { username, password } = this.state;
     return (
       <div className="col-md-6 m-auto">
@@ -40,7 +51,7 @@ export class Login extends Component {
               />
             </div>
             <div className="form-group">
-              <button type="login" className="btn btn-primary">
+              <button type="submit" className="btn btn-primary">
                 Login
               </button>
             </div>
@@ -53,5 +64,7 @@ export class Login extends Component {
     );
   }
 }
-
-export default Login;
+const mapStateToProps = (state) => ({
+  isAuthenticated: state.auth.isAuthenticated
+});
+export default connect(mapStateToProps, { login_user })(Login);

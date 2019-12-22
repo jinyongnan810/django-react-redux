@@ -8,11 +8,12 @@ import {
   CURRENT_LEAD
 } from "./types";
 import { createMessage, returnErrors } from "./messages";
+import { tokenConfig } from "./auth";
 
 // get leads
-export const getLeads = () => (dispatch) => {
+export const getLeads = () => (dispatch, getState) => {
   axios
-    .get("/api/leads/")
+    .get("/api/leads/", tokenConfig(getState))
     .then((res) => {
       dispatch({ type: GET_LEADS, payload: res.data });
     })
@@ -29,9 +30,9 @@ export const getLeads = () => (dispatch) => {
 };
 
 //del leads
-export const delLead = (id) => (dispatch) => {
+export const delLead = (id) => (dispatch, getState) => {
   axios
-    .delete(`/api/leads/${id}/`)
+    .delete(`/api/leads/${id}/`, tokenConfig(getState))
     .then((res) => {
       dispatch(createMessage({ deleteLead: "Lead Deleted" }));
       dispatch({ type: DEL_LEAD, payload: id });
@@ -42,18 +43,18 @@ export const delLead = (id) => (dispatch) => {
 };
 
 // add leads
-export const addLead = (data) => (dispatch) => {
+export const addLead = (data) => (dispatch, getState) => {
   const clearLead = { id: "", name: "", email: "", message: "" };
   if (data.id) {
     axios
-      .get(`/api/leads/${data.id}/`)
+      .get(`/api/leads/${data.id}/`, tokenConfig(getState))
       .then((res) => {
         const newLead = res.data;
         newLead.name = data.name;
         newLead.email = data.email;
         newLead.message = data.message;
         axios
-          .put(`/api/leads/${data.id}/`, newLead)
+          .put(`/api/leads/${data.id}/`, newLead, tokenConfig(getState))
           .then((res) => {
             dispatch(createMessage({ updateLead: "Lead Updated" }));
             dispatch({ type: UPDATE_LEAD, payload: res.data });
@@ -68,7 +69,7 @@ export const addLead = (data) => (dispatch) => {
       });
   } else {
     axios
-      .post("/api/leads/", data)
+      .post("/api/leads/", data, tokenConfig(getState))
       .then((res) => {
         dispatch({ type: ADD_LEAD, payload: res.data });
         dispatch(createMessage({ addLead: "Lead Added" }));
